@@ -1,0 +1,63 @@
+syntax = "proto3";
+option go_package = "/proto";
+
+service RideService {
+    rpc register(RegisterRequest) returns (RegisterResponse);
+    rpc login(LoginRequest) returns (LoginResponse);
+    rpc logout(LogoutRequest) returns (Empty);
+    rpc addFunds(AddFundsRequest) returns (AddFundsResponse);
+    rpc checkBalance(CheckBalanceRequest) returns (CheckBalanceResponse);
+}
+
+message Empty {
+
+}
+
+/* Register */
+
+message RegisterRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message RegisterResponse {
+    string authToken = 1;
+}
+
+/* Login */
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string authToken = 1;
+}
+
+/* Logout */
+
+message LogoutRequest {
+    string authToken = 1;
+}
+
+/* Add Funds */
+
+message AddFundsRequest {
+    string authToken = 1;
+    uint32 amount = 2;
+}
+
+message AddFundsResponse {
+    uint32 balance = 1;
+}
+
+/* Check Balance */
+
+message CheckBalanceRequest {
+    string authToken = 1;
+}
+
+message CheckBalanceResponse {
+    uint32 balance = 1;
+}
