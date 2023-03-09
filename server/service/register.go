@@ -17,10 +17,10 @@ import (
 func (s RideServiceServer) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	log.Printf("[Register] %v\n", request)
 
-	var username = request.Username
-	var password = request.Password
+	username := request.Username
+	password := request.Password
 
-	_, found := users[username]
+	_, found := s.Clients[username]
 
 	if found {
 		return nil, status.Errorf(codes.AlreadyExists, "User '%s' already exists", username)
@@ -36,8 +36,8 @@ func (s RideServiceServer) Register(ctx context.Context, request *pb.RegisterReq
 		return nil, status.Errorf(codes.Internal, "Unexpected error while processing password")
 	}
 
-	var user = dmn.User{Username: username, PasswordHash: passwordHash, Salt: salt}
-	users[username] = &user
+	client := dmn.Client{Username: username, PasswordHash: passwordHash, Salt: salt, OnBike: false, AtZone: "None", Logs: make([]*dmn.Log, 0)}
+	s.Clients[username] = &client
 
 	token, err := utils.GenerateAuthToken(username)
 
@@ -45,8 +45,8 @@ func (s RideServiceServer) Register(ctx context.Context, request *pb.RegisterReq
 		return nil, status.Errorf(codes.Internal, "Unexpected error while generating authentication token")
 	}
 
-	var session = dmn.Session{User: &user, AuthToken: token, LastAccess: time.Now()}
-	tokens[token] = &session
+	session := dmn.Session{Client: &client, AuthToken: token, LastAccess: time.Now()}
+	s.Sessions[token] = &session
 
 	return &pb.RegisterResponse{
 		AuthToken: token,

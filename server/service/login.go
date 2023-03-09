@@ -17,18 +17,16 @@ import (
 func (s RideServiceServer) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
 	log.Printf("[Login] %v\n", request)
 
-	var username = request.Username
-	var password = request.Password
+	username := request.Username
+	password := request.Password
 
-	userPtr, found := users[username]
-
+	clientPtr, found := s.Clients[username]
 	if !found {
 		return nil, status.Errorf(codes.NotFound, "User %s does not exist", username)
 	}
 
-	var salt = userPtr.Salt
-	match, err := utils.ValidatePassword(userPtr.PasswordHash, password, salt)
-
+	salt := clientPtr.Salt
+	match, err := utils.ValidatePassword(clientPtr.PasswordHash, password, salt)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Unexpected error while validating password")
 	} else if !match {
@@ -36,13 +34,12 @@ func (s RideServiceServer) Login(ctx context.Context, request *pb.LoginRequest) 
 	}
 
 	token, err := utils.GenerateAuthToken(username)
-
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Unexpected error while generating authentication token")
 	}
 
-	var session = dmn.Session{User: userPtr, AuthToken: token, LastAccess: time.Now()}
-	tokens[token] = &session
+	session := dmn.Session{Client: clientPtr, AuthToken: token, LastAccess: time.Now()}
+	s.Sessions[token] = &session
 
 	return &pb.LoginResponse{
 		AuthToken: token,

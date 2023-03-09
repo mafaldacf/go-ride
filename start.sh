@@ -3,6 +3,8 @@
 if [ "$#" -eq 1 ] && [ $1 = "compile" ]
   then
     echo "generating protoc files from proto/ride.proto..."
+    export GOPATH=$HOME/go
+    export PATH=$PATH:$GOPATH/bin
     protoc --go_out=. --go-grpc_out=. proto/ride.proto
     echo "done!"
 

@@ -10,17 +10,16 @@ import (
 func (s RideServiceServer) AddFunds(ctx context.Context, request *pb.AddFundsRequest) (*pb.AddFundsResponse, error) {
 	log.Printf("[Add Funds] %v\n", request)
 
-	sessionPtr, err := validateAuthToken(request.AuthToken)
-
+	sessionPtr, err := s.ValidateAuthToken(request.AuthToken)
 	if err != nil {
 		return nil, err
 	}
 
-	var userPtr = sessionPtr.User
-	userPtr.Balance += request.Amount
-	var balance = userPtr.Balance
+	clientPtr := sessionPtr.Client
+	clientPtr.Balance += uint(request.Amount)
+	balance := clientPtr.Balance
 
 	return &pb.AddFundsResponse{
-		Balance: balance,
+		Balance: uint32(balance),
 	}, nil
 }

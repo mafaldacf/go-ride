@@ -2,8 +2,6 @@
 
 Just a simple project implemented with Go and gRPC
 
-First project using Go
-
 ## Requirements
 
 - **Golang** programming language

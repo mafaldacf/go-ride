@@ -24,6 +24,11 @@ const (
 	RideService_Logout_FullMethodName       = "/RideService/logout"
 	RideService_AddFunds_FullMethodName     = "/RideService/addFunds"
 	RideService_CheckBalance_FullMethodName = "/RideService/checkBalance"
+	RideService_PickupBike_FullMethodName   = "/RideService/pickupBike"
+	RideService_DropBike_FullMethodName     = "/RideService/dropBike"
+	RideService_Move_FullMethodName         = "/RideService/move"
+	RideService_InfoClient_FullMethodName   = "/RideService/infoClient"
+	RideService_InfoZones_FullMethodName    = "/RideService/infoZones"
 )
 
 // RideServiceClient is the client API for RideService service.
@@ -32,9 +37,14 @@ const (
 type RideServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*Empty, error)
+	Logout(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*Empty, error)
 	AddFunds(ctx context.Context, in *AddFundsRequest, opts ...grpc.CallOption) (*AddFundsResponse, error)
-	CheckBalance(ctx context.Context, in *CheckBalanceRequest, opts ...grpc.CallOption) (*CheckBalanceResponse, error)
+	CheckBalance(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*CheckBalanceResponse, error)
+	PickupBike(ctx context.Context, in *PickupBikeRequest, opts ...grpc.CallOption) (*Empty, error)
+	DropBike(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*Empty, error)
+	Move(ctx context.Context, in *MoveRequest, opts ...grpc.CallOption) (*Empty, error)
+	InfoClient(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoClientResponse, error)
+	InfoZones(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoZonesResponse, error)
 }
 
 type rideServiceClient struct {
@@ -63,7 +73,7 @@ func (c *rideServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
-func (c *rideServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *rideServiceClient) Logout(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, RideService_Logout_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -81,9 +91,54 @@ func (c *rideServiceClient) AddFunds(ctx context.Context, in *AddFundsRequest, o
 	return out, nil
 }
 
-func (c *rideServiceClient) CheckBalance(ctx context.Context, in *CheckBalanceRequest, opts ...grpc.CallOption) (*CheckBalanceResponse, error) {
+func (c *rideServiceClient) CheckBalance(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*CheckBalanceResponse, error) {
 	out := new(CheckBalanceResponse)
 	err := c.cc.Invoke(ctx, RideService_CheckBalance_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rideServiceClient) PickupBike(ctx context.Context, in *PickupBikeRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, RideService_PickupBike_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rideServiceClient) DropBike(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, RideService_DropBike_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rideServiceClient) Move(ctx context.Context, in *MoveRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, RideService_Move_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rideServiceClient) InfoClient(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoClientResponse, error) {
+	out := new(InfoClientResponse)
+	err := c.cc.Invoke(ctx, RideService_InfoClient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rideServiceClient) InfoZones(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoZonesResponse, error) {
+	out := new(InfoZonesResponse)
+	err := c.cc.Invoke(ctx, RideService_InfoZones_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +151,14 @@ func (c *rideServiceClient) CheckBalance(ctx context.Context, in *CheckBalanceRe
 type RideServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	Logout(context.Context, *LogoutRequest) (*Empty, error)
+	Logout(context.Context, *AuthRequest) (*Empty, error)
 	AddFunds(context.Context, *AddFundsRequest) (*AddFundsResponse, error)
-	CheckBalance(context.Context, *CheckBalanceRequest) (*CheckBalanceResponse, error)
+	CheckBalance(context.Context, *AuthRequest) (*CheckBalanceResponse, error)
+	PickupBike(context.Context, *PickupBikeRequest) (*Empty, error)
+	DropBike(context.Context, *AuthRequest) (*Empty, error)
+	Move(context.Context, *MoveRequest) (*Empty, error)
+	InfoClient(context.Context, *AuthRequest) (*InfoClientResponse, error)
+	InfoZones(context.Context, *AuthRequest) (*InfoZonesResponse, error)
 	mustEmbedUnimplementedRideServiceServer()
 }
 
@@ -112,14 +172,29 @@ func (UnimplementedRideServiceServer) Register(context.Context, *RegisterRequest
 func (UnimplementedRideServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedRideServiceServer) Logout(context.Context, *LogoutRequest) (*Empty, error) {
+func (UnimplementedRideServiceServer) Logout(context.Context, *AuthRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
 }
 func (UnimplementedRideServiceServer) AddFunds(context.Context, *AddFundsRequest) (*AddFundsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFunds not implemented")
 }
-func (UnimplementedRideServiceServer) CheckBalance(context.Context, *CheckBalanceRequest) (*CheckBalanceResponse, error) {
+func (UnimplementedRideServiceServer) CheckBalance(context.Context, *AuthRequest) (*CheckBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckBalance not implemented")
+}
+func (UnimplementedRideServiceServer) PickupBike(context.Context, *PickupBikeRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PickupBike not implemented")
+}
+func (UnimplementedRideServiceServer) DropBike(context.Context, *AuthRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DropBike not implemented")
+}
+func (UnimplementedRideServiceServer) Move(context.Context, *MoveRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Move not implemented")
+}
+func (UnimplementedRideServiceServer) InfoClient(context.Context, *AuthRequest) (*InfoClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InfoClient not implemented")
+}
+func (UnimplementedRideServiceServer) InfoZones(context.Context, *AuthRequest) (*InfoZonesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InfoZones not implemented")
 }
 func (UnimplementedRideServiceServer) mustEmbedUnimplementedRideServiceServer() {}
 
@@ -171,7 +246,7 @@ func _RideService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _RideService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LogoutRequest)
+	in := new(AuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,7 +258,7 @@ func _RideService_Logout_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: RideService_Logout_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RideServiceServer).Logout(ctx, req.(*LogoutRequest))
+		return srv.(RideServiceServer).Logout(ctx, req.(*AuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -207,7 +282,7 @@ func _RideService_AddFunds_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _RideService_CheckBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckBalanceRequest)
+	in := new(AuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -219,7 +294,97 @@ func _RideService_CheckBalance_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: RideService_CheckBalance_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RideServiceServer).CheckBalance(ctx, req.(*CheckBalanceRequest))
+		return srv.(RideServiceServer).CheckBalance(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RideService_PickupBike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PickupBikeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).PickupBike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_PickupBike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).PickupBike(ctx, req.(*PickupBikeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RideService_DropBike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).DropBike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_DropBike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).DropBike(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RideService_Move_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MoveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).Move(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_Move_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).Move(ctx, req.(*MoveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RideService_InfoClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).InfoClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_InfoClient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).InfoClient(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RideService_InfoZones_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).InfoZones(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_InfoZones_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).InfoZones(ctx, req.(*AuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -250,6 +415,26 @@ var RideService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "checkBalance",
 			Handler:    _RideService_CheckBalance_Handler,
+		},
+		{
+			MethodName: "pickupBike",
+			Handler:    _RideService_PickupBike_Handler,
+		},
+		{
+			MethodName: "dropBike",
+			Handler:    _RideService_DropBike_Handler,
+		},
+		{
+			MethodName: "move",
+			Handler:    _RideService_Move_Handler,
+		},
+		{
+			MethodName: "infoClient",
+			Handler:    _RideService_InfoClient_Handler,
+		},
+		{
+			MethodName: "infoZones",
+			Handler:    _RideService_InfoZones_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

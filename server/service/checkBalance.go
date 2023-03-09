@@ -7,19 +7,18 @@ import (
 	pb "go-ride/proto"
 )
 
-func (s RideServiceServer) CheckBalance(ctx context.Context, request *pb.CheckBalanceRequest) (*pb.CheckBalanceResponse, error) {
+func (s RideServiceServer) CheckBalance(ctx context.Context, request *pb.AuthRequest) (*pb.CheckBalanceResponse, error) {
 	log.Printf("[Check Balance] %v\n", request)
 
-	sessionPtr, err := validateAuthToken(request.AuthToken)
-
+	sessionPtr, err := s.ValidateAuthToken(request.AuthToken)
 	if err != nil {
 		return nil, err
 	}
 
-	var userPtr = sessionPtr.User
-	var balance = userPtr.Balance
+	clientPtr := sessionPtr.Client
+	balance := clientPtr.Balance
 
 	return &pb.CheckBalanceResponse{
-		Balance: balance,
+		Balance: uint32(balance),
 	}, nil
 }

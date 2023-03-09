@@ -4,13 +4,22 @@ option go_package = "/proto";
 service RideService {
     rpc register(RegisterRequest) returns (RegisterResponse);
     rpc login(LoginRequest) returns (LoginResponse);
-    rpc logout(LogoutRequest) returns (Empty);
+    rpc logout(AuthRequest) returns (Empty);
     rpc addFunds(AddFundsRequest) returns (AddFundsResponse);
-    rpc checkBalance(CheckBalanceRequest) returns (CheckBalanceResponse);
+    rpc checkBalance(AuthRequest) returns (CheckBalanceResponse);
+    rpc pickupBike(PickupBikeRequest) returns (Empty);
+    rpc dropBike(AuthRequest) returns (Empty);
+    rpc move(MoveRequest) returns(Empty);
+    rpc infoClient(AuthRequest) returns (InfoClientResponse);
+    rpc infoZones(AuthRequest) returns (InfoZonesResponse);
 }
 
 message Empty {
 
+}
+
+message AuthRequest {
+    string authToken = 1;
 }
 
 /* Register */
@@ -35,12 +44,6 @@ message LoginResponse {
     string authToken = 1;
 }
 
-/* Logout */
-
-message LogoutRequest {
-    string authToken = 1;
-}
-
 /* Add Funds */
 
 message AddFundsRequest {
@@ -54,10 +57,39 @@ message AddFundsResponse {
 
 /* Check Balance */
 
-message CheckBalanceRequest {
-    string authToken = 1;
-}
-
 message CheckBalanceResponse {
     uint32 balance = 1;
+}
+
+/* Pickup Bike */
+
+message PickupBikeRequest {
+    string authToken = 1;
+    string zone = 2;
+}
+
+/* Move */
+
+message MoveRequest {
+    string authToken = 1;
+    string zone = 2;
+}
+
+/* Info Client */
+
+message InfoClientResponse {
+    bool onBike = 1;
+    string atZone = 2;
+}
+
+/* Info Zones */
+
+message Zone {
+    string name = 1;
+    int32 bikes = 2;
+    int32 capacity = 3;
+}
+
+message InfoZonesResponse {
+    repeated Zone zones = 1;
 }

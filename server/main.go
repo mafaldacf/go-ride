@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	pb "go-ride/proto"
-
+	dmn "go-ride/server/domain"
 	svc "go-ride/server/service"
 )
 
@@ -22,7 +22,22 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	service := &svc.RideServiceServer{}
+
+	service := &svc.RideServiceServer{
+		Clients:  make(map[string]*dmn.Client),
+		Sessions: make(map[string]*dmn.Session),
+		Zones: map[string]*dmn.Zone{
+			"Alpha":   {Name: "Alpha", Bikes: 15, Capacity: 20},
+			"Bravo":   {Name: "Bravo", Bikes: 15, Capacity: 20},
+			"Charlie": {Name: "Charlie", Bikes: 0, Capacity: 10},
+			"Delta":   {Name: "Delta", Bikes: 5, Capacity: 10},
+			"Echo":    {Name: "Echo", Bikes: 0, Capacity: 5},
+			"Foxtrot": {Name: "Foxtrot", Bikes: 5, Capacity: 5},
+		},
+		Logs: make([]*dmn.Log, 0),
+	}
+
+	service.InitSessionVerifier()
 
 	pb.RegisterRideServiceServer(server, service)
 

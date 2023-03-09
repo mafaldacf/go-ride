@@ -26,12 +26,12 @@ func ShowStartMenu(client *pb.RideServiceClient) {
 		fmt.Scanf("%s", &option)
 		switch option {
 		case "1":
-			username, authToken, ok = registerHelper(client)
+			username, authToken, ok = register(client)
 			if ok {
 				ShowClientMenu(client, username, authToken)
 			}
 		case "2":
-			username, authToken, ok = loginHelper(client)
+			username, authToken, ok = login(client)
 			if ok {
 				ShowClientMenu(client, username, authToken)
 			}
@@ -43,20 +43,13 @@ func ShowStartMenu(client *pb.RideServiceClient) {
 	}
 }
 
-func registerHelper(client *pb.RideServiceClient) (string, string, bool) {
-	var username, password string
+/* --------
 
-	fmt.Print("Username: ")
-	fmt.Scanf("%s", &username)
+Helpers
 
-	fmt.Print("Password: ")
-	fmt.Scanf("%s", &password)
+---------- */
 
-	authToken, ok := register(client, username, password)
-	return username, authToken, ok
-}
-
-func loginHelper(client *pb.RideServiceClient) (string, string, bool) {
+func readUser() (string, string) {
 	var username, password string
 
 	fmt.Print("Username: ")
@@ -64,40 +57,45 @@ func loginHelper(client *pb.RideServiceClient) (string, string, bool) {
 	fmt.Print("Password: ")
 	fmt.Scanf("%s", &password)
 
-	authToken, ok := login(client, username, password)
-	return username, authToken, ok
+	return username, password
 }
 
-func register(client *pb.RideServiceClient, username string, password string) (string, bool) {
-	ctx := context.Background()
+/* --------
+
+API calls
+
+---------- */
+
+func register(client *pb.RideServiceClient) (string, string, bool) {
+	username, password := readUser()
 
 	request := &pb.RegisterRequest{
 		Username: username,
 		Password: password,
 	}
 
-	resp, err := (*client).Register(ctx, request)
+	resp, err := (*client).Register(context.Background(), request)
 
 	if err != nil {
 		fmt.Println(err)
-		return "", false
+		return "", "", false
 	}
-	return resp.AuthToken, true
+	return username, resp.AuthToken, true
 }
 
-func login(client *pb.RideServiceClient, username string, password string) (string, bool) {
-	ctx := context.Background()
+func login(client *pb.RideServiceClient) (string, string, bool) {
+	username, password := readUser()
 
 	request := &pb.LoginRequest{
 		Username: username,
 		Password: password,
 	}
 
-	resp, err := (*client).Login(ctx, request)
+	resp, err := (*client).Login(context.Background(), request)
 
 	if err != nil {
 		fmt.Println(err)
-		return "", false
+		return "", "", false
 	}
-	return resp.AuthToken, true
+	return username, resp.AuthToken, true
 }
