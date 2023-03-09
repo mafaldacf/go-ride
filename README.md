@@ -22,7 +22,11 @@ Install Protocol Buffer Compiler ([Installation](https://grpc.io/docs/protoc-ins
 
 ## Running the Project
 
-Compile project (optional):
+Generate new keys and certificates for TLS (done by default):
+
+    ./genKeys.sh
+
+Compile project (done by default):
 
     ./start.sh compile
 

@@ -1,27 +1,48 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	pb "go-ride/proto"
 	dmn "go-ride/server/domain"
 	svc "go-ride/server/service"
 )
 
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	serverCert, err := tls.LoadX509KeyPair("../keys/server-cert.pem", "../keys/server-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 func main() {
 	const address = "localhost:8000"
 	fmt.Printf("** Starting go-ride server on %s **\n", address)
 
-	lis, err := net.Listen("tcp", address)
+	tlsCredentials, err := loadTLSCredentials()
 	if err != nil {
-		log.Fatalf("Could not create listener: %s\n", err)
+		log.Fatal("[ERROR] Could not load TLS credentials: ", err)
 	}
 
-	server := grpc.NewServer()
+	lis, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalf("[ERROR] Could not create listener: %s\n", err)
+	}
+
+	server := grpc.NewServer(grpc.Creds(tlsCredentials))
 
 	service := &svc.RideServiceServer{
 		Clients:  make(map[string]*dmn.Client),
@@ -43,6 +64,6 @@ func main() {
 
 	err = server.Serve(lis)
 	if err != nil {
-		log.Fatalf("Could not serve server: %s\n", err)
+		log.Fatalf("[ERROR] Could not serve listener: %s\n", err)
 	}
 }
