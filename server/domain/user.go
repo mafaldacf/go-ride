@@ -13,7 +13,7 @@ type Client struct {
 	AtZone  string
 
 	// logs for every ride
-	Logs []*Log
+	Logs []Log
 }
 
 // users can have more than one session in multiple processes

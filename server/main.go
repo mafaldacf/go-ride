@@ -55,7 +55,6 @@ func main() {
 			"Echo":    {Name: "Echo", Bikes: 0, Capacity: 5},
 			"Foxtrot": {Name: "Foxtrot", Bikes: 5, Capacity: 5},
 		},
-		Logs: make([]*dmn.Log, 0),
 	}
 
 	service.InitSessionVerifier()

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	pb "go-ride/proto"
+	dmn "go-ride/server/domain"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,8 +20,11 @@ func (s RideServiceServer) DropBike(ctx context.Context, request *pb.AuthRequest
 	}
 
 	clientPtr := sessionPtr.Client
-	zone := clientPtr.AtZone
+	if !clientPtr.OnBike {
+		return nil, status.Error(codes.FailedPrecondition, "You are not riding a bike")
+	}
 
+	zone := clientPtr.AtZone
 	zonePtr := s.Zones[zone]
 	if zonePtr.Bikes == zonePtr.Capacity {
 		return nil, status.Errorf(codes.NotFound, "There is currently no free stop to drop your bike at %s", zone)
@@ -29,6 +33,7 @@ func (s RideServiceServer) DropBike(ctx context.Context, request *pb.AuthRequest
 	zonePtr.Bikes++
 	clientPtr.OnBike = false
 	clientPtr.AtZone = "None"
+	s.logAction(clientPtr, dmn.DROP_BIKE, "", "", zone)
 
 	return &pb.Empty{}, nil
 }

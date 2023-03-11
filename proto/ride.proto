@@ -1,6 +1,8 @@
 syntax = "proto3";
 option go_package = "/proto";
 
+import "google/protobuf/timestamp.proto";
+
 service RideService {
     rpc register(RegisterRequest) returns (RegisterResponse);
     rpc login(LoginRequest) returns (LoginResponse);
@@ -12,6 +14,7 @@ service RideService {
     rpc move(MoveRequest) returns(Empty);
     rpc infoClient(AuthRequest) returns (InfoClientResponse);
     rpc infoZones(AuthRequest) returns (InfoZonesResponse);
+    rpc checkLogs(AuthRequest) returns (CheckLogsResponse);
 }
 
 message Empty {
@@ -92,4 +95,26 @@ message Zone {
 
 message InfoZonesResponse {
     repeated Zone zones = 1;
+}
+
+/* Logs */
+
+enum Action {
+    MOVE = 0;
+    PICKUP_BIKE = 1;
+    DROP_BIKE = 2;
+}
+
+message Log {
+    google.protobuf.Timestamp timestamp = 1;
+    Action action = 2;
+
+    // optionals depending on the context
+    string fromZone = 3;
+    string toZone = 4;
+    string zone = 5;
+}
+
+message CheckLogsResponse {
+    repeated Log logs = 1;
 }

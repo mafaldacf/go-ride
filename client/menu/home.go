@@ -35,6 +35,7 @@ func ShowClientMenu(client *pb.RideServiceClient, username string, authToken str
 			fmt.Println("5. Move")
 			fmt.Println("6. Info Client")
 			fmt.Println("7. Info Zones")
+			fmt.Println("8. Check Logs")
 			fmt.Println("0. Logout")
 			fmt.Println("-------------------------")
 			fmt.Print("\n> ")
@@ -60,6 +61,8 @@ func ShowClientMenu(client *pb.RideServiceClient, username string, authToken str
 			err = infoClient(client, authToken)
 		case "7":
 			err = infoZones(client, authToken)
+		case "8":
+			err = checkLogs(client, authToken)
 		case "0":
 			fmt.Printf("\nGoodbye %s!\n", username)
 			logout(client, authToken)
@@ -71,9 +74,12 @@ func ShowClientMenu(client *pb.RideServiceClient, username string, authToken str
 		}
 
 		if err != nil {
+			fmt.Println(err)
 			st, ok := status.FromError(err)
+
+			// client is unauthenticated (auth token may have expired) and needs to login again
 			if ok && st.Code() == codes.Unauthenticated {
-				return // client is unauthenticated (auth token may have expired) and needs to login again
+				return
 			}
 		}
 
@@ -122,7 +128,6 @@ func checkBalance(client *pb.RideServiceClient, authToken string) error {
 	resp, err := (*client).CheckBalance(context.Background(), request)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -151,47 +156,10 @@ func addFunds(client *pb.RideServiceClient, authToken string) error {
 	resp, err := (*client).AddFunds(context.Background(), request)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	fmt.Printf("[Add Funds] balance:%v\u20AC\n", resp.Balance) //print balance + euro symbol
-	return nil
-}
-
-func infoClient(client *pb.RideServiceClient, authToken string) error {
-	request := &pb.AuthRequest{
-		AuthToken: authToken,
-	}
-
-	resp, err := (*client).InfoClient(context.Background(), request)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	fmt.Printf("[Info Client] onBike:%v, atZone:'%v'", resp.OnBike, resp.AtZone)
-	return nil
-}
-
-func infoZones(client *pb.RideServiceClient, authToken string) error {
-	request := &pb.AuthRequest{
-		AuthToken: authToken,
-	}
-
-	resp, err := (*client).InfoZones(context.Background(), request)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	fmt.Println("[Info Zones]")
-	for _, zone := range resp.Zones {
-		fmt.Printf("Zone:'%v' \t Bikes:%v \t Capacity %v\n", zone.Name, zone.Bikes, zone.Capacity)
-	}
-
 	return nil
 }
 
@@ -211,7 +179,6 @@ func pickupBike(client *pb.RideServiceClient, authToken string) error {
 	_, err := (*client).PickupBike(context.Background(), request)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -227,7 +194,6 @@ func dropBike(client *pb.RideServiceClient, authToken string) error {
 	_, err := (*client).DropBike(context.Background(), request)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -251,11 +217,68 @@ func move(client *pb.RideServiceClient, authToken string) error {
 	_, err := (*client).Move(context.Background(), request)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	fmt.Printf("[Move] Success! You are now at %s\n", zone)
+	return nil
+}
+
+func infoClient(client *pb.RideServiceClient, authToken string) error {
+	request := &pb.AuthRequest{
+		AuthToken: authToken,
+	}
+
+	resp, err := (*client).InfoClient(context.Background(), request)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("[Info Client] onBike:%v, atZone:'%v'\n", resp.OnBike, resp.AtZone)
+	return nil
+}
+
+func infoZones(client *pb.RideServiceClient, authToken string) error {
+	request := &pb.AuthRequest{
+		AuthToken: authToken,
+	}
+
+	resp, err := (*client).InfoZones(context.Background(), request)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("[Info Zones]")
+	for _, zone := range resp.Zones {
+		fmt.Printf("Zone:'%v' \t Bikes:%v \t Capacity:%v\n", zone.Name, zone.Bikes, zone.Capacity)
+	}
+
+	return nil
+}
+
+func checkLogs(client *pb.RideServiceClient, authToken string) error {
+	request := &pb.AuthRequest{
+		AuthToken: authToken,
+	}
+
+	resp, err := (*client).CheckLogs(context.Background(), request)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("[Logs]")
+	for _, log := range resp.Logs {
+		fmt.Printf("Timestamp: %v, Action: %v, ", log.Timestamp.AsTime(), log.Action)
+		if log.Action == pb.Action_MOVE {
+			fmt.Printf("From: '%v', To: '%v'\n", log.FromZone, log.ToZone)
+		} else {
+			fmt.Printf("Zone: '%v'\n", log.Zone)
+		}
+	}
+
 	return nil
 }
 

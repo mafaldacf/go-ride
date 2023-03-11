@@ -36,7 +36,7 @@ func (s RideServiceServer) Register(ctx context.Context, request *pb.RegisterReq
 		return nil, status.Errorf(codes.Internal, "Unexpected error while processing password")
 	}
 
-	client := dmn.Client{Username: username, PasswordHash: passwordHash, Salt: salt, OnBike: false, AtZone: "None", Logs: make([]*dmn.Log, 0)}
+	client := dmn.Client{Username: username, PasswordHash: passwordHash, Salt: salt, OnBike: false, AtZone: "None", Logs: make([]dmn.Log, 0)}
 	s.Clients[username] = &client
 
 	token, err := utils.GenerateAuthToken(username)

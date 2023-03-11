@@ -1,6 +1,6 @@
 # Go Ride
 
-Just a simple project implemented with Go and gRPC
+A simple project implemented in Go and using gRPC
 
 ## Requirements
 

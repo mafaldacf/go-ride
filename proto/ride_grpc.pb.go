@@ -29,6 +29,7 @@ const (
 	RideService_Move_FullMethodName         = "/RideService/move"
 	RideService_InfoClient_FullMethodName   = "/RideService/infoClient"
 	RideService_InfoZones_FullMethodName    = "/RideService/infoZones"
+	RideService_CheckLogs_FullMethodName    = "/RideService/checkLogs"
 )
 
 // RideServiceClient is the client API for RideService service.
@@ -45,6 +46,7 @@ type RideServiceClient interface {
 	Move(ctx context.Context, in *MoveRequest, opts ...grpc.CallOption) (*Empty, error)
 	InfoClient(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoClientResponse, error)
 	InfoZones(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*InfoZonesResponse, error)
+	CheckLogs(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*CheckLogsResponse, error)
 }
 
 type rideServiceClient struct {
@@ -145,6 +147,15 @@ func (c *rideServiceClient) InfoZones(ctx context.Context, in *AuthRequest, opts
 	return out, nil
 }
 
+func (c *rideServiceClient) CheckLogs(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*CheckLogsResponse, error) {
+	out := new(CheckLogsResponse)
+	err := c.cc.Invoke(ctx, RideService_CheckLogs_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RideServiceServer is the server API for RideService service.
 // All implementations must embed UnimplementedRideServiceServer
 // for forward compatibility
@@ -159,6 +170,7 @@ type RideServiceServer interface {
 	Move(context.Context, *MoveRequest) (*Empty, error)
 	InfoClient(context.Context, *AuthRequest) (*InfoClientResponse, error)
 	InfoZones(context.Context, *AuthRequest) (*InfoZonesResponse, error)
+	CheckLogs(context.Context, *AuthRequest) (*CheckLogsResponse, error)
 	mustEmbedUnimplementedRideServiceServer()
 }
 
@@ -195,6 +207,9 @@ func (UnimplementedRideServiceServer) InfoClient(context.Context, *AuthRequest) 
 }
 func (UnimplementedRideServiceServer) InfoZones(context.Context, *AuthRequest) (*InfoZonesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InfoZones not implemented")
+}
+func (UnimplementedRideServiceServer) CheckLogs(context.Context, *AuthRequest) (*CheckLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckLogs not implemented")
 }
 func (UnimplementedRideServiceServer) mustEmbedUnimplementedRideServiceServer() {}
 
@@ -389,6 +404,24 @@ func _RideService_InfoZones_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RideService_CheckLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RideServiceServer).CheckLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RideService_CheckLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RideServiceServer).CheckLogs(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RideService_ServiceDesc is the grpc.ServiceDesc for RideService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -435,6 +468,10 @@ var RideService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "infoZones",
 			Handler:    _RideService_InfoZones_Handler,
+		},
+		{
+			MethodName: "checkLogs",
+			Handler:    _RideService_CheckLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

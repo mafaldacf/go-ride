@@ -5,6 +5,7 @@ import (
 	"log"
 
 	pb "go-ride/proto"
+	dmn "go-ride/server/domain"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -55,6 +56,7 @@ func (s RideServiceServer) Move(ctx context.Context, request *pb.MoveRequest) (*
 
 	clientPtr.AtZone = nextZone
 	clientPtr.Balance -= cost
+	s.logAction(clientPtr, dmn.MOVE, currZone, nextZone, "")
 
 	return &pb.Empty{}, nil
 }

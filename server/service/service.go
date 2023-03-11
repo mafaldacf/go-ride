@@ -16,12 +16,15 @@ const MIN_BALANCE = 5
 type RideServiceServer struct {
 	pb.UnimplementedRideServiceServer
 
-	// lets deal with pointers since it is more efficient to change values
+	// lets deal with pointers since it is more efficient and it is easier to change values
 	Clients  map[string]*dmn.Client
 	Sessions map[string]*dmn.Session
 	Zones    map[string]*dmn.Zone
+}
 
-	Logs []*dmn.Log // this is a slice, not an array
+func (s RideServiceServer) logAction(client *dmn.Client, action int, fromZone string, toZone string, zone string) {
+	log := dmn.Log{Timestamp: time.Now(), Action: action, FromZone: fromZone, ToZone: toZone, Zone: zone}
+	client.Logs = append(client.Logs, log)
 }
 
 func (s RideServiceServer) verifySessions() {

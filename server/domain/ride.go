@@ -8,9 +8,19 @@ type Zone struct {
 	Capacity int // maximum capacity for bikes
 }
 
+// enumeration of actions
+const (
+	MOVE        = 0
+	PICKUP_BIKE = 1
+	DROP_BIKE   = 2
+)
+
 type Log struct {
-	Username  string
-	FromZone  string
-	ToZone    string
 	Timestamp time.Time
+	Action    int
+
+	// optionals depending on the context
+	FromZone string
+	ToZone   string
+	Zone     string
 }
